@@ -1,0 +1,223 @@
+package myfirstapp.wordgame;
+
+import android.graphics.Color;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import java.util.ArrayList;
+
+
+public class MainActivity extends AppCompatActivity 
+{
+    TextView.OnEditorActionListener checkYes = new TextView.OnEditorActionListener() 
+    {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) 
+        {
+            if (actionId == EditorInfo.IME_ACTION_DONE) 
+            {
+                check(v);
+                return true;
+            }
+            check(v);
+            return false;
+        }
+    };
+    TextView.OnEditorActionListener guess = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) 
+        {
+            if (actionId == EditorInfo.IME_ACTION_DONE) 
+            {
+                Guess(v);
+                return true;
+            }
+            Guess(v);
+            return false;
+        }
+    };
+    int numPlayer = 0;
+    int maxPoints = 0;
+    String currentWord = "James Jacobson";
+    String prevWord="Madhur Jaffrey";
+    int CurrentPlayer = 1;
+    int p1Score = 0;
+    int p2Score = 0;
+    int p3Score = 0;
+    int p4Score = 0;
+    int p5Score = 0;
+    int[] scores = new int[5];
+    ArrayList<String> wordBank;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) 
+    {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_main);
+        EditText playerNumText = (EditText) findViewById(R.id.playerNum);
+        EditText maxPointsText = (EditText) findViewById(R.id.maxPoints);
+        playerNumText.setOnEditorActionListener(checkYes);
+        maxPointsText.setOnEditorActionListener(checkYes);
+        Button start = (Button) findViewById(R.id.button);
+        start.setEnabled(false);
+
+    }
+
+    public void check(View view) 
+    {
+        EditText playerNumText = (EditText) findViewById(R.id.playerNum);
+        EditText maxPointsText = (EditText) findViewById(R.id.maxPoints);
+        Button start = (Button) findViewById(R.id.button);
+        boolean checkPlayer = true;
+        boolean checkMax = true;
+        start.setEnabled(false);
+        if (Integer.parseInt(playerNumText.getText().toString()) > 1 && Integer.parseInt(playerNumText.getText().toString()) <= 5) 
+        {
+            playerNumText.setTextColor(Color.GREEN);
+        } 
+        else 
+        {
+            playerNumText.setTextColor(Color.RED);
+            checkPlayer = false;
+        }
+        if (Integer.parseInt(maxPointsText.getText().toString()) >= 50 && Integer.parseInt(maxPointsText.getText().toString()) <= 200) 
+        {
+            maxPointsText.setTextColor(Color.GREEN);
+        } else 
+        {
+            maxPointsText.setTextColor(Color.RED);
+            checkMax = false;
+        }
+        if (checkPlayer && checkMax)
+        {
+            start.setEnabled(true);
+            numPlayer = Integer.parseInt(playerNumText.getText().toString());
+            maxPoints = Integer.parseInt(maxPointsText.getText().toString());
+        }
+    }
+
+
+    public void playGame(View view) 
+    {
+        setContentView(R.layout.play_game);
+        TextView previousWord=(TextView)findViewById(R.id.prevWordTextView);
+        previousWord.setText(prevWord);
+        EditText word = (EditText) findViewById(R.id.currentWord);
+        word.setOnEditorActionListener(guess);
+        ArrayList<TextView> players = new ArrayList<TextView>();
+        TextView p1 = (TextView) findViewById(R.id.p1);
+        TextView p2 = (TextView) findViewById(R.id.p2);
+        TextView p3 = (TextView) findViewById(R.id.p3);
+        TextView p4 = (TextView) findViewById(R.id.p4);
+        TextView p5 = (TextView) findViewById(R.id.p5);
+        players.add(p1);
+        players.add(p2);
+        players.add(p3);
+        players.add(p4);
+        players.add(p5);
+        for (int i = 0; i < numPlayer; i++) 
+        {
+            players.get(i).setTextColor(Color.BLACK);
+        }
+    }
+
+    public void Guess(View view) 
+    {
+        TextView previousWord=(TextView)findViewById(R.id.prevWordTextView);
+        EditText currentWordEditText = (EditText) findViewById(R.id.currentWord);
+        currentWordEditText.setOnEditorActionListener(guess);
+        TextView errorText = (TextView) findViewById(R.id.errorText);
+        String ap = "abcdefghijklmnopqrstuvwxyz ";
+        String guess = currentWordEditText.getText().toString();
+        wordBank = new ArrayList<String>();
+            if (!guess.contains(" ")) 
+            {
+                errorText.setText("Invalid word, the name needs a space to be valid");
+                return;
+            }
+            for(int i = 0; i < guess.length(); i++)
+            {
+                if(!(ap).contains(guess.substring(i,i+1).toLowerCase()))
+                {
+                    errorText.setText("Invalid word, use letters only");
+                    return;
+                }
+            }
+
+
+            if (!currentWord.substring(currentWord.indexOf(" ") + 1, currentWord.indexOf(" ") + 2).toLowerCase().equals(guess.substring(0, 1).toLowerCase())) {
+                errorText.setText("Invalid word, the first letter of your guess does not match the first letter of the previous word");
+                return;
+            }
+            else
+            {
+                boolean checker = true;
+                for (int j = 0; j < wordBank.size(); j++) 
+                {
+                    if (guess.equals(wordBank.get(j))) {
+                        errorText.setText("Invalid word, this word was used already");
+                        checker = false;
+                    }
+                }
+                if (checker) {
+                    errorText.setText("OK word");
+                    wordBank.add(guess);
+                    prevWord = currentWord;
+                    currentWord = guess;
+                    TextView[] texts = new TextView[5];
+                    texts[0] = (TextView) findViewById(R.id.p1);
+                    texts[1] = (TextView) findViewById(R.id.p2);
+                    texts[2] = (TextView) findViewById(R.id.p3);
+                    texts[3] = (TextView) findViewById(R.id.p4);
+                    texts[4] = (TextView) findViewById(R.id.p5);
+                    if(CurrentPlayer==1)
+                    {
+                        p1Score+=guess.length();
+                        texts[0].setText(Integer.toString(p1Score));
+                    }
+                    if(CurrentPlayer==2)
+                    {
+                        p2Score+=guess.length();
+                        texts[1].setText(Integer.toString(p2Score));
+                    }
+                    if(CurrentPlayer==3)
+                    {
+                        p3Score+=guess.length();
+                        texts[2].setText(Integer.toString(p3Score));
+                    }
+                    if(CurrentPlayer==4)
+                    {
+                        p4Score+=guess.length();
+                        texts[3].setText(Integer.toString(p5Score));
+                    }
+                    if(CurrentPlayer==5)
+                    {
+                        p5Score+=guess.length();
+                        texts[4].setText(Integer.toString(p5Score));
+                    }
+                    CurrentPlayer++;
+                    if (CurrentPlayer > numPlayer) {
+                        CurrentPlayer = 1;
+                    }
+                    previousWord.setText(currentWordEditText.getText());
+                }
+            }
+
+
+        if (p1Score >= maxPoints || p2Score >= maxPoints || p3Score >= maxPoints || p4Score >= maxPoints || p5Score >= maxPoints) {
+            errorText.setText("WINNER!!!!!!");
+        }
+    }
+
+
+}
